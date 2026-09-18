@@ -8,12 +8,12 @@ crons = ["*/15 * * * *"]
 
 [[kv_namespaces]]
 binding = "STATIONS_CACHE"
-id = "REPLACE_WITH_KV_ID"
+id = "39aff7f8295f42dc9a3ce0747d9d4c5b"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "gasko-db"
-database_id = "REPLACE_WITH_D1_ID"
+database_id = "eb0a2750-6588-420e-b16b-6508d5930df4"
 
 [vars]
 ENV = "production"

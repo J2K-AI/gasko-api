@@ -91,10 +91,14 @@ export class SyncStationsFromMitecoUseCase {
   }
 
   private mapStation(s: MitecoStation): GasStation {
-    const lat = parseFloat(s['Latitud'].replace(',', '.'));
-    const lng = parseFloat(s['Longitud (WGS84)'].replace(',', '.'));
+    const parseCoord = (v?: string): number => {
+      if (!v) return 0;
+      const n = parseFloat(v.replace(',', '.'));
+      return isNaN(n) ? 0 : n;
+    };
 
-    const parsePrice = (v: string): number | null => {
+    const parsePrice = (v?: string): number | null => {
+      if (!v) return null;
       const n = parseFloat(v.replace(',', '.'));
       return isNaN(n) || n === 0 ? null : n;
     };
@@ -103,25 +107,28 @@ export class SyncStationsFromMitecoUseCase {
     const isOpen24h   = /L-D: 00:00-24:00/i.test(scheduleRaw);
 
     return {
-      id:       s['IDEESS'],
-      name:     s['Rótulo'],
-      brand:    this.normalizeBrand(s['Rótulo']),
-      location: { latitude: lat, longitude: lng },
-      address:  s['Dirección'],
-      postalCode: s['C.P.'],
-      locality:   s['Municipio'],
-      province:   s['Provincia'],
+      id:       s['IDEESS'] ?? '',
+      name:     s['Rótulo'] ?? '',
+      brand:    this.normalizeBrand(s['Rótulo'] ?? ''),
+      location: {
+        latitude: parseCoord(s['Latitud']),
+        longitude: parseCoord(s['Longitud (WGS84)']),
+      },
+      address:  s['Dirección'] ?? '',
+      postalCode: s['C.P.'] ?? '',
+      locality:   s['Municipio'] ?? '',
+      province:   s['Provincia'] ?? '',
       schedule: { raw: scheduleRaw, isOpen24h },
       prices: {
         [FuelType.GASOLINA_95]:     parsePrice(s['Precio Gasolina 95 E5']),
         [FuelType.GASOLINA_98]:     parsePrice(s['Precio Gasolina 98 E5']),
-        [FuelType.GASOLEO_A]:       parsePrice(s['Precio Gasóleo A']),
-        [FuelType.GASOLEO_PREMIUM]: parsePrice(s['Precio Gasóleo Premium']),
-        [FuelType.GASOLEO_B]:       parsePrice(s['Precio Gasóleo B']),
+        [FuelType.GASOLEO_A]:       parsePrice(s['Precio Gasoleo A'] ?? s['Precio Gasóleo A']),
+        [FuelType.GASOLEO_PREMIUM]: parsePrice(s['Precio Gasoleo Premium'] ?? s['Precio Gasóleo Premium']),
+        [FuelType.GASOLEO_B]:       parsePrice(s['Precio Gasoleo B'] ?? s['Precio Gasóleo B']),
         [FuelType.GLP]:             parsePrice(s['Precio Gases licuados del petróleo']),
         [FuelType.GNC]:             parsePrice(s['Precio Gas Natural Comprimido']),
         [FuelType.GNL]:             parsePrice(s['Precio Gas Natural Licuado']),
-        [FuelType.HIDROGENO]:       parsePrice(s['Precio Hidrógeno']),
+        [FuelType.HIDROGENO]:       parsePrice(s['Precio Hidrogeno'] ?? s['Precio Hidrógeno']),
       },
       services: {
         hasCarWash:   false,
