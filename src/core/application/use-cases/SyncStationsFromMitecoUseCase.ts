@@ -122,13 +122,13 @@ export class SyncStationsFromMitecoUseCase {
       prices: {
         [FuelType.GASOLINA_95]:     parsePrice(s['Precio Gasolina 95 E5']),
         [FuelType.GASOLINA_98]:     parsePrice(s['Precio Gasolina 98 E5']),
-        [FuelType.GASOLEO_A]:       parsePrice(s['Precio Gasoleo A'] ?? s['Precio Gasóleo A']),
-        [FuelType.GASOLEO_PREMIUM]: parsePrice(s['Precio Gasoleo Premium'] ?? s['Precio Gasóleo Premium']),
-        [FuelType.GASOLEO_B]:       parsePrice(s['Precio Gasoleo B'] ?? s['Precio Gasóleo B']),
+        [FuelType.GASOLEO_A]:       parsePrice(s['Precio Gasóleo A']),
+        [FuelType.GASOLEO_PREMIUM]: parsePrice(s['Precio Gasóleo Premium']),
+        [FuelType.GASOLEO_B]:       parsePrice(s['Precio Gasóleo B']),
         [FuelType.GLP]:             parsePrice(s['Precio Gases licuados del petróleo']),
         [FuelType.GNC]:             parsePrice(s['Precio Gas Natural Comprimido']),
         [FuelType.GNL]:             parsePrice(s['Precio Gas Natural Licuado']),
-        [FuelType.HIDROGENO]:       parsePrice(s['Precio Hidrogeno'] ?? s['Precio Hidrógeno']),
+        [FuelType.HIDROGENO]:       parsePrice(s['Precio Hidrógeno']),
       },
       services: {
         hasCarWash:   false,
