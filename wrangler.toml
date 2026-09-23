@@ -4,7 +4,7 @@ compatibility_date = "2024-10-22"
 compatibility_flags = ["nodejs_compat"]
 
 [triggers]
-crons = ["0 8,14,20 * * *"]
+crons = ["0 6 * * *"]   # 1×/día a las 06:00 UTC — MITECO publica precios una vez al día
 
 [[kv_namespaces]]
 binding = "STATIONS_CACHE"

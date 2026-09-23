@@ -48,6 +48,19 @@ export class D1PriceHistoryRepository implements PriceHistoryRepository {
     if (entries.length === 0) return 0;
 
     const today = new Date().toISOString().split('T')[0]!;
+
+    // Guard: si ya existe al menos un registro de hoy, el snapshot diario
+    // ya fue creado por una ejecución anterior del cron. Evitamos enviar
+    // ~50.000 statements que la constraint UNIQUE descartaría igualmente,
+    // reduciendo las escrituras en D1 a prácticamente cero en la 2ª y 3ª
+    // ejecución diaria del cron.
+    const alreadySynced = await this.db
+      .prepare(`SELECT 1 FROM price_history WHERE recorded_date = ? LIMIT 1`)
+      .bind(today)
+      .first<{ 1: number }>();
+
+    if (alreadySynced) return 0;
+
     const sql = `
       INSERT OR IGNORE INTO price_history (station_id, fuel_type, price, recorded_date)
       VALUES (?, ?, ?, ?)

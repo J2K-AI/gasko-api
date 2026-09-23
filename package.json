@@ -1,6 +1,6 @@
 {
   "name": "gasko-api",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "dev": "wrangler dev",
@@ -13,8 +13,8 @@
     "hono": "^4.6.3"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20241022.0",
+    "@cloudflare/workers-types": "^5.20260923.1",
     "typescript": "^5.5.2",
-    "wrangler": "^3.78.0"
+    "wrangler": "^4.137.0"
   }
 }

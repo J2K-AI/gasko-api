@@ -132,8 +132,11 @@ export class D1StationRepository implements StationRepository {
 
   async upsertMany(stations: GasStation[]): Promise<number> {
     const now = new Date().toISOString();
+    // INSERT ... ON CONFLICT DO UPDATE SET: verdadero upsert que NO borra la fila
+    // existente (evita perder datos de servicios establecidos por reportes de usuarios
+    // y elimina el coste de DELETE + INSERT innecesario en cada sync).
     const sql = `
-      INSERT OR REPLACE INTO stations (
+      INSERT INTO stations (
         id, name, brand, latitude, longitude, address, postal_code, locality, province,
         schedule_raw, is_open_24h,
         has_car_wash, has_store, has_cafe, has_ev_charger, has_air_pump,
@@ -141,10 +144,33 @@ export class D1StationRepository implements StationRepository {
         price_gasoleo_b, price_glp, price_gnc, price_gnl, price_hidrogeno,
         last_synced
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        name                = excluded.name,
+        brand               = excluded.brand,
+        latitude            = excluded.latitude,
+        longitude           = excluded.longitude,
+        address             = excluded.address,
+        postal_code         = excluded.postal_code,
+        locality            = excluded.locality,
+        province            = excluded.province,
+        schedule_raw        = excluded.schedule_raw,
+        is_open_24h         = excluded.is_open_24h,
+        price_gasolina_95   = excluded.price_gasolina_95,
+        price_gasolina_98   = excluded.price_gasolina_98,
+        price_gasoleo_a     = excluded.price_gasoleo_a,
+        price_gasoleo_premium = excluded.price_gasoleo_premium,
+        price_gasoleo_b     = excluded.price_gasoleo_b,
+        price_glp           = excluded.price_glp,
+        price_gnc           = excluded.price_gnc,
+        price_gnl           = excluded.price_gnl,
+        price_hidrogeno     = excluded.price_hidrogeno,
+        last_synced         = excluded.last_synced
+      -- has_car_wash, has_store, has_cafe, has_ev_charger, has_air_pump NO se
+      -- actualizan aquí: los gestiona exclusivamente el flujo de reportes de usuarios.
     `;
 
     const BATCH_SIZE = 100;
-    let totalInserted = 0;
+    let totalUpserted = 0;
 
     for (let i = 0; i < stations.length; i += BATCH_SIZE) {
       const batch = stations.slice(i, i + BATCH_SIZE);
@@ -171,11 +197,11 @@ export class D1StationRepository implements StationRepository {
           now,
         ),
       );
-      await this.db.batch(stmts);
-      totalInserted += batch.length;
+      const results = await this.db.batch(stmts);
+      totalUpserted += results.reduce((sum, r) => sum + (r.meta.changes ?? 0), 0);
     }
 
-    return totalInserted;
+    return totalUpserted;
   }
 }
 
